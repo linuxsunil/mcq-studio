@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCQ Studio — Rise 360 Question Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--accent:#2563eb;--accent-light:#dbeafe;--easy:#16a34a;--easy-bg:#dcfce7;--medium:#d97706;--medium-bg:#fef3c7;--hard:#dc2626;--hard-bg:#fee2e2;--surface:#ffffff;--bg:#f8fafc;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--sidebar-bg:#0f172a;--sidebar-text:#cbd5e1;--sidebar-active:#2563eb;--font-display:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'DM Mono',monospace}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px}
+  #sidebar{width:220px;min-width:220px;background:var(--sidebar-bg);color:var(--sidebar-text);display:flex;flex-direction:column;padding:24px 0;position:fixed;top:0;left:0;bottom:0;z-index:100}
+  .sidebar-logo{font-family:var(--font-display);font-size:16px;font-weight:700;color:#fff;padding:0 20px 28px;border-bottom:1px solid #1e293b;margin-bottom:12px}
+  .sidebar-logo span{color:var(--sidebar-active)}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;color:var(--sidebar-text);transition:all 0.15s;border-left:3px solid transparent}
+  .nav-item:hover{background:#1e293b;color:#fff}
+  .nav-item.active{background:#1e293b;color:#fff;border-left-color:var(--sidebar-active)}
+  .nav-icon{font-size:15px;width:18px;text-align:center}
+  .sidebar-section{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:1.2px;color:#475569;padding:16px 20px 6px}
+  .pool-badge{margin-left:auto;font-size:11px;background:#1e293b;border-radius:10px;padding:1px 7px;font-family:var(--font-mono)}
+  #badge-easy{color:#4ade80}#badge-medium{color:#fbbf24}#badge-hard{color:#f87171}
+  #main{margin-left:220px;flex:1;display:flex;flex-direction:column}
+  #topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+  .topbar-title{font-family:var(--font-display);font-size:14px;font-weight:600;flex:1}
+  select,input[type="text"],input[type="number"],input[type="password"],textarea{font-family:var(--font-body);font-size:13px;padding:7px 11px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);outline:none;transition:border-color 0.15s}
+  select:focus,input:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:70px}
+  label{font-size:12px;font-weight:500;color:var(--muted);display:block;margin-bottom:4px}
+  .btn{font-family:var(--font-body);font-size:13px;font-weight:500;padding:8px 16px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all 0.15s;white-space:nowrap}
+  .btn:hover{background:var(--bg)}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover{background:#1d4ed8}
+  .btn-danger{background:#fee2e2;color:var(--hard);border-color:#fecaca}
+  .btn-sm{padding:5px 10px;font-size:12px}
+  .panel{display:none;padding:28px;max-width:960px}
+  .panel.active{display:block}
+  .panel-heading{font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:4px}
+  .panel-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .form-group{margin-bottom:14px}
+  .color-row{display:flex;align-items:center;gap:10px}
+  .color-row input[type="color"]{width:40px;height:32px;padding:2px;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:none}
+  .q-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px}
+  .q-card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .q-num{font-family:var(--font-mono);font-size:12px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 7px}
+  .pool-tag{font-size:11px;font-weight:500;border-radius:20px;padding:2px 10px}
+  .pool-easy{background:var(--easy-bg);color:var(--easy)}
+  .pool-medium{background:var(--medium-bg);color:var(--medium)}
+  .pool-hard{background:var(--hard-bg);color:var(--hard)}
+  .options-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .option-row{display:flex;align-items:center;gap:8px}
+  .option-row input[type="text"]{flex:1}
+  .opt-label{font-family:var(--font-mono);font-size:12px;width:18px;color:var(--muted)}
+  .fb-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .fb-item label{font-size:11px;font-weight:600;margin-bottom:4px}
+  .fb-item textarea{width:100%;min-height:58px;font-size:12px}
+  .fb-correct-label{color:var(--easy)}
+  .fb-wrong-label{color:var(--muted)}
+  .q-actions{display:flex;gap:8px;margin-top:10px;justify-content:flex-end}
+  .qa-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+  .qa-filter-btn{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);cursor:pointer;background:var(--surface);font-family:var(--font-body);transition:all 0.15s}
+  .qa-filter-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .pool-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+  .stat-card{border-radius:10px;padding:16px;text-align:center}
+  .stat-card.easy-card{background:var(--easy-bg)}.stat-card.medium-card{background:var(--medium-bg)}.stat-card.hard-card{background:var(--hard-bg)}
+  .stat-num{font-family:var(--font-display);font-size:28px;font-weight:700}
+  .easy-card .stat-num{color:var(--easy)}.medium-card .stat-num{color:var(--medium)}.hard-card .stat-num{color:var(--hard)}
+  .stat-label{font-size:12px;color:var(--muted);margin-top:2px}
+  .output-box{font-family:var(--font-mono);font-size:12px;background:#0f172a;color:#e2e8f0;border-radius:10px;padding:20px;white-space:pre-wrap;overflow-x:auto;max-height:500px;overflow-y:auto;line-height:1.6}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #dbeafe;border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .alert{padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:14px}
+  .alert-info{background:#dbeafe;color:#1e40af}.alert-success{background:#dcfce7;color:#15803d}.alert-error{background:#fee2e2;color:#991b1b}
+  .api-key-row{display:flex;align-items:flex-end;gap:10px;margin-bottom:14px}
+  .toggle-eye{background:none;border:1px solid var(--border);border-radius:6px;padding:7px 10px;cursor:pointer;font-size:14px}
+  .tab-row{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px}
+  .tab{font-size:13px;font-weight:500;padding:8px 18px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab-panel{display:none}.tab-panel.active{display:block}
+  .attempt-opt{border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:all 0.15s;margin-bottom:10px}
+  .attempt-opt:hover{border-color:var(--accent)}
+  .attempt-opt.selected{border-color:var(--accent);background:var(--accent-light)}
+  .attempt-opt h4{font-size:13px;font-weight:600;margin-bottom:4px}
+  .attempt-opt p{font-size:12px;color:var(--muted)}
+  .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:all 0.15s;margin-bottom:14px}
+  .upload-zone:hover{border-color:var(--accent);background:var(--accent-light)}
+  .upload-zone input[type="file"]{display:none}
+  .ratio-badge{font-family:var(--font-mono);font-size:13px;font-weight:500;background:var(--accent-light);color:var(--accent);border-radius:6px;padding:4px 12px}
+  .fb-legend{font-size:12px;color:var(--muted);margin-bottom:12px;padding:8px 12px;background:var(--bg);border-radius:6px;border-left:3px solid var(--accent);line-height:1.6}
+  #notification{position:fixed;bottom:24px;right:24px;padding:12px 18px;background:#0f172a;color:#fff;border-radius:8px;font-size:13px;z-index:9999;display:none}
+</style>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="sidebar-logo">MCQ <span>Studio</span></div>
+  <div class="sidebar-section">Setup</div>
+  <div class="nav-item active" onclick="showPanel('config')" id="nav-config"><span class="nav-icon">⚙️</span> Configuration</div>
+  <div class="nav-item" onclick="showPanel('api')" id="nav-api"><span class="nav-icon">🔑</span> AI Provider</div>
+  <div class="sidebar-section">Create</div>
+  <div class="nav-item" onclick="showPanel('generate')" id="nav-generate"><span class="nav-icon">✨</span> Generate</div>
+  <div class="nav-item" onclick="showPanel('manual')" id="nav-manual"><span class="nav-icon">✏️</span> Add Manually</div>
+  <div class="sidebar-section">Review</div>
+  <div class="nav-item" onclick="showPanel('qa')" id="nav-qa"><span class="nav-icon">✅</span> QA Review</div>
+  <div class="sidebar-section">Pools</div>
+  <div class="nav-item" onclick="showPool('easy')" id="nav-easy"><span class="nav-icon">🟢</span> Easy <span class="pool-badge" id="badge-easy">0</span></div>
+  <div class="nav-item" onclick="showPool('medium')" id="nav-medium"><span class="nav-icon">🟡</span> Medium <span class="pool-badge" id="badge-medium">0</span></div>
+  <div class="nav-item" onclick="showPool('hard')" id="nav-hard"><span class="nav-icon">🔴</span> Hard <span class="pool-badge" id="badge-hard">0</span></div>
+  <div class="sidebar-section" style="margin-top:auto;">Export</div>
+  <div class="nav-item" onclick="showPanel('output')" id="nav-output"><span class="nav-icon">📤</span> Generate Rise Code</div>
+</nav>
+
+<main id="main">
+  <div id="topbar"><div class="topbar-title" id="topbar-title">Configuration</div></div>
+
+  <!-- CONFIG -->
+  <div class="panel active" id="panel-config">
+    <div class="panel-heading">Configuration</div>
+    <div class="panel-sub">Set brand colors and attempt behavior.</div>
+    <div class="card">
+      <h3 style="font-family:var(--font-display);font-size:14px;margin-bottom:16px;">🎨 Brand Colors</h3>
+      <div class="grid-2">
+        <div class="form-group"><label>Primary Color</label><div class="color-row"><input type="color" id="color-primary" value="#2563eb"><input type="text" id="color-primary-hex" value="#2563eb" style="width:100px;font-family:var(--font-mono);"></div></div>
+        <div class="form-group"><label>Correct Feedback Color</label><div class="color-row"><input type="color" id="color-correct" value="#16a34a"><input type="text" id="color-correct-hex" value="#16a34a" style="width:100px;font-family:var(--font-mono);"></div></div>
+        <div class="form-group"><label>Incorrect Feedback Color</label><div class="color-row"><input type="color" id="color-incorrect" value="#dc2626"><input type="text" id="color-incorrect-hex" value="#dc2626" style="width:100px;font-family:var(--font-mono);"></div></div>
+        <div class="form-group"><label>Background Color</label><div class="color-row"><input type="color" id="color-bg" value="#f8fafc"><input type="text" id="color-bg-hex" value="#f8fafc" style="width:100px;font-family:var(--font-mono);"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="font-family:var(--font-display);font-size:14px;margin-bottom:8px;">🎯 Attempt Settings</h3>
+      <div class="fb-legend" style="margin-bottom:14px;"><strong>Feedback logic:</strong> ✅ Correct answer → that option's specific feedback shown immediately (any attempt). ❌ Wrong answer → generic "try again" on early attempts; the specific feedback for whichever wrong option was chosen is only revealed on the final attempt.</div>
+      <div class="attempt-opt selected" id="attempt-1" onclick="selectAttempt(1)"><h4>1 Attempt</h4><p>Single shot. Specific option feedback (correct or wrong) shown immediately.</p></div>
+      <div class="attempt-opt" id="attempt-2" onclick="selectAttempt(2)"><h4>2 Attempts</h4><p>Wrong on attempt 1 → generic retry. Attempt 2 → specific per-option feedback revealed.</p></div>
+      <div class="attempt-opt" id="attempt-3" onclick="selectAttempt(3)"><h4>3 Attempts</h4><p>Wrong on attempts 1 & 2 → generic retry each time. Attempt 3 → specific per-option feedback revealed.</p></div>
+    </div>
+    <div class="card">
+      <div class="form-group"><label>Quiz Title</label><input type="text" id="quiz-title" value="Knowledge Check" style="width:100%;"></div>
+      <div style="display:flex;align-items:center;gap:8px;"><span class="ratio-badge">2 Easy : 2 Medium : 1 Hard</span><span style="font-size:12px;color:var(--muted);">fixed randomisation ratio</span></div>
+    </div>
+    <button class="btn btn-primary" onclick="showPanel('api')">Next: Set AI Provider →</button>
+  </div>
+
+  <!-- API -->
+  <div class="panel" id="panel-api">
+    <div class="panel-heading">AI Provider</div>
+    <div class="panel-sub">Connect your preferred AI model.</div>
+    <div class="card">
+      <div class="form-group"><label>AI Provider</label><select id="ai-provider" onchange="updateProviderUI()" style="width:100%;"><option value="claude">Anthropic Claude</option><option value="openai">OpenAI GPT-4</option><option value="gemini">Google Gemini</option><option value="copilot">GitHub Copilot / Azure OpenAI</option></select></div>
+      <div class="form-group"><label>Model</label><select id="ai-model" style="width:100%;"><option value="claude-sonnet-4-20250514">claude-sonnet-4-20250514 (recommended)</option><option value="claude-opus-4-5">claude-opus-4-5</option><option value="claude-haiku-4-5-20251001">claude-haiku-4-5-20251001 (fast)</option></select></div>
+      <div class="form-group"><label>API Key</label><div class="api-key-row"><input type="password" id="api-key" placeholder="sk-ant-..." style="flex:1;font-family:var(--font-mono);"><button class="toggle-eye" onclick="toggleApiKey()">👁</button></div><div style="font-size:11px;color:var(--muted);">Stored in browser session only.</div></div>
+      <div id="endpoint-row" style="display:none;" class="form-group"><label>Azure Endpoint URL</label><input type="text" id="azure-endpoint" placeholder="https://YOUR_RESOURCE.openai.azure.com" style="width:100%;"></div>
+      <button class="btn btn-primary" onclick="testApiConnection()">Test Connection</button>
+      <span id="api-test-result" style="margin-left:10px;font-size:12px;"></span>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px 18px;margin-top:4px;">
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:20px;line-height:1;">🔒</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#15803d;margin-bottom:4px;">Your API key is private & secure</div>
+          <div style="font-size:12px;color:#166534;line-height:1.6;">
+            Your key is stored <strong>only in your browser session</strong> and is sent <strong>directly to the AI provider</strong> (Anthropic, Google, OpenAI) — never to our servers. It is cleared the moment you close this tab.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;margin-top:10px;">
+      <div style="font-size:12px;color:#1e40af;line-height:1.6;">
+        💡 <strong>New to this?</strong> Get your free API key from your provider's dashboard:<br>
+        <span style="margin-left:12px;">• Anthropic: <code style="font-size:11px;">console.anthropic.com</code></span><br>
+        <span style="margin-left:12px;">• Google Gemini: <code style="font-size:11px;">aistudio.google.com</code></span><br>
+        <span style="margin-left:12px;">• OpenAI: <code style="font-size:11px;">platform.openai.com</code></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERATE -->
+  <div class="panel" id="panel-generate">
+    <div class="panel-heading">Generate Questions</div>
+    <div class="panel-sub">AI generates questions with specific feedback for each option A, B, C, D.</div>
+    <div class="tab-row">
+      <div class="tab active" onclick="switchGenTab('topic')" id="gentab-topic">By Topic</div>
+      <div class="tab" onclick="switchGenTab('upload')" id="gentab-upload">Upload Doc</div>
+    </div>
+    <div class="tab-panel active" id="genp-topic">
+      <div class="card">
+        <div class="form-group"><label>Topic / Subject</label><input type="text" id="gen-topic" placeholder="e.g. Data Science & ML, Workplace Safety..." style="width:100%;"></div>
+        <div class="grid-3">
+          <div class="form-group"><label>Easy Questions</label><input type="number" id="gen-easy" value="4" min="1" max="20" style="width:100%;"></div>
+          <div class="form-group"><label>Medium Questions</label><input type="number" id="gen-medium" value="4" min="1" max="20" style="width:100%;"></div>
+          <div class="form-group"><label>Hard Questions</label><input type="number" id="gen-hard" value="2" min="1" max="20" style="width:100%;"></div>
+        </div>
+        <div class="form-group"><label>Additional Context (optional)</label><textarea id="gen-context" placeholder="Focus on retail scenarios. Avoid medical jargon."></textarea></div>
+        <button class="btn btn-primary" onclick="generateQuestions()"><span id="gen-spinner" style="display:none;"><span class="spinner"></span></span>✨ Generate Questions</button>
+      </div>
+    </div>
+    <div class="tab-panel" id="genp-upload">
+      <div class="card">
+        <div class="upload-zone" onclick="document.getElementById('docx-upload').click()">
+          <input type="file" id="docx-upload" accept=".txt" onchange="handleDocUpload(event)">
+          <div style="font-size:28px;margin-bottom:8px;">📄</div>
+          <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Drop your .txt file here or click to browse</div>
+          <div style="font-size:13px;color:var(--muted);">MCQ Studio template format with [FB_A] [FB_B] [FB_C] [FB_D] tags</div>
+        </div>
+        <div id="upload-status"></div>
+      </div>
+      <div class="alert alert-info">ℹ️ Use the Word template from the repo. Each option has its own [FB_A]–[FB_D] feedback tag.</div>
+    </div>
+  </div>
+
+  <!-- MANUAL -->
+  <div class="panel" id="panel-manual">
+    <div class="panel-heading">Add Question Manually</div>
+    <div class="panel-sub">Write specific feedback for each individual answer option.</div>
+    <div class="card">
+      <div class="grid-2" style="margin-bottom:14px;">
+        <div class="form-group"><label>Pool</label><select id="manual-pool" style="width:100%;"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></div>
+        <div class="form-group"><label>Correct Answer</label><select id="manual-correct" onchange="updateFbLabels()" style="width:100%;"><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
+      </div>
+      <div class="form-group"><label>Question Text</label><textarea id="manual-q" style="width:100%;" placeholder="Enter your question here..."></textarea></div>
+      <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Options</div>
+      <div class="options-grid">
+        <div class="option-row"><span class="opt-label">A</span><input type="text" id="manual-opt-A" placeholder="Option A" style="flex:1;"></div>
+        <div class="option-row"><span class="opt-label">B</span><input type="text" id="manual-opt-B" placeholder="Option B" style="flex:1;"></div>
+        <div class="option-row"><span class="opt-label">C</span><input type="text" id="manual-opt-C" placeholder="Option C" style="flex:1;"></div>
+        <div class="option-row"><span class="opt-label">D</span><input type="text" id="manual-opt-D" placeholder="Option D" style="flex:1;"></div>
+      </div>
+      <div class="fb-legend">Write specific feedback for each option. The correct option's feedback shows immediately when selected. Wrong options' feedback is only shown on the final attempt.</div>
+      <div class="fb-grid">
+        <div class="fb-item"><label class="fb-correct-label" id="fblabel-A">✅ Feedback for A (correct)</label><textarea id="manual-fb-A" placeholder="Correct! Because..."></textarea></div>
+        <div class="fb-item"><label class="fb-wrong-label" id="fblabel-B">Feedback for B</label><textarea id="manual-fb-B" placeholder="Not quite. B is wrong because..."></textarea></div>
+        <div class="fb-item"><label class="fb-wrong-label" id="fblabel-C">Feedback for C</label><textarea id="manual-fb-C" placeholder="Not quite. C is wrong because..."></textarea></div>
+        <div class="fb-item"><label class="fb-wrong-label" id="fblabel-D">Feedback for D</label><textarea id="manual-fb-D" placeholder="Not quite. D is wrong because..."></textarea></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;">
+        <button class="btn btn-primary" onclick="addManualQuestion()">Add to Pool</button>
+        <button class="btn" onclick="clearManualForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QA -->
+  <div class="panel" id="panel-qa">
+    <div class="panel-heading">QA Review</div>
+    <div class="panel-sub">Review per-option feedback, approve questions, then export.</div>
+    <div class="pool-stats">
+      <div class="stat-card easy-card"><div class="stat-num" id="qa-count-easy">0</div><div class="stat-label">Easy — Approved</div></div>
+      <div class="stat-card medium-card"><div class="stat-num" id="qa-count-medium">0</div><div class="stat-label">Medium — Approved</div></div>
+      <div class="stat-card hard-card"><div class="stat-num" id="qa-count-hard">0</div><div class="stat-label">Hard — Approved</div></div>
+    </div>
+    <div class="qa-toolbar">
+      <span style="font-size:12px;font-weight:500;">Filter:</span>
+      <button class="qa-filter-btn active" onclick="filterQA('all',this)">All</button>
+      <button class="qa-filter-btn" onclick="filterQA('easy',this)">Easy</button>
+      <button class="qa-filter-btn" onclick="filterQA('medium',this)">Medium</button>
+      <button class="qa-filter-btn" onclick="filterQA('hard',this)">Hard</button>
+      <button class="qa-filter-btn" onclick="filterQA('pending',this)">Pending</button>
+      <button class="qa-filter-btn" onclick="filterQA('approved',this)">Approved</button>
+      <button class="btn btn-sm" style="margin-left:auto;" onclick="approveAll()">Approve All</button>
+    </div>
+    <div id="qa-list"></div>
+  </div>
+
+  <!-- POOL -->
+  <div class="panel" id="panel-pool">
+    <div class="panel-heading" id="pool-panel-title">Easy Pool</div>
+    <div class="panel-sub" id="pool-panel-sub">All easy questions</div>
+    <div id="pool-list"></div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="panel" id="panel-output">
+    <div class="panel-heading">Generate Rise 360 Code</div>
+    <div class="panel-sub">Randomizes 2:2:1 from approved pools and exports a self-contained Rise 360 HTML block.</div>
+    <div class="pool-stats">
+      <div class="stat-card easy-card"><div class="stat-num" id="out-count-easy">0</div><div class="stat-label">Easy approved</div></div>
+      <div class="stat-card medium-card"><div class="stat-num" id="out-count-medium">0</div><div class="stat-label">Medium approved</div></div>
+      <div class="stat-card hard-card"><div class="stat-num" id="out-count-hard">0</div><div class="stat-label">Hard approved</div></div>
+    </div>
+    <div class="card">
+      <p style="font-size:13px;margin-bottom:14px;">Draws <strong>2 easy + 2 medium + 1 hard</strong> questions randomly. Correct answer → specific feedback immediately. Wrong answer → generic retry on early attempts, specific option feedback on final attempt.</p>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="generateRiseCode()">🎲 Randomize &amp; Generate Code</button>
+        <button class="btn" onclick="copyOutput()">📋 Copy Code</button>
+        <button class="btn" onclick="downloadOutput()">⬇️ Download .html</button>
+      </div>
+      <div id="output-alert"></div>
+    </div>
+    <div id="output-box-wrap" style="display:none;">
+      <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Paste into a Rise 360 Code Block component:</div>
+      <div class="output-box" id="output-box"></div>
+    </div>
+  </div>
+</main>
+
+<div id="notification"></div>
+
+<script>
+const state={questions:[],config:{primaryColor:'#2563eb',correctColor:'#16a34a',incorrectColor:'#dc2626',bgColor:'#f8fafc',maxAttempts:1,title:'Knowledge Check'},ai:{provider:'claude',model:'claude-sonnet-4-20250514',key:'',endpoint:''},currentPool:'easy'};
+
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  const navEl=document.getElementById('nav-'+id);
+  if(navEl)navEl.classList.add('active');
+  const titles={config:'Configuration',api:'AI Provider',generate:'Generate Questions',manual:'Add Manually',qa:'QA Review',pool:'Question Pool',output:'Generate Rise Code'};
+  document.getElementById('topbar-title').textContent=titles[id]||id;
+  if(id==='qa')renderQA();
+  if(id==='output')renderOutputStats();
+}
+
+function showPool(pool){
+  state.currentPool=pool;
+  showPanel('pool');
+  const labels={easy:'Easy',medium:'Medium',hard:'Hard'};
+  document.getElementById('pool-panel-title').textContent=labels[pool]+' Pool';
+  document.getElementById('pool-panel-sub').textContent='All '+labels[pool].toLowerCase()+' questions';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('nav-'+pool).classList.add('active');
+  renderPool(pool);
+}
+
+function syncColor(id){
+  const picker=document.getElementById('color-'+id);
+  const hex=document.getElementById('color-'+id+'-hex');
+  const map={primary:'primaryColor',correct:'correctColor',incorrect:'incorrectColor',bg:'bgColor'};
+  picker.addEventListener('input',()=>{hex.value=picker.value;state.config[map[id]]=picker.value;});
+  hex.addEventListener('change',()=>{picker.value=hex.value;state.config[map[id]]=hex.value;});
+}
+['primary','correct','incorrect','bg'].forEach(syncColor);
+
+function selectAttempt(n){
+  [1,2,3].forEach(i=>document.getElementById('attempt-'+i).classList.remove('selected'));
+  document.getElementById('attempt-'+n).classList.add('selected');
+  state.config.maxAttempts=n;
+}
+
+const MODEL_OPTIONS={claude:[{v:'claude-sonnet-4-20250514',l:'claude-sonnet-4-20250514 (recommended)'},{v:'claude-opus-4-5',l:'claude-opus-4-5'},{v:'claude-haiku-4-5-20251001',l:'claude-haiku-4-5-20251001 (fast)'}],openai:[{v:'gpt-4o',l:'GPT-4o (recommended)'},{v:'gpt-4-turbo',l:'GPT-4 Turbo'},{v:'gpt-3.5-turbo',l:'GPT-3.5 Turbo'}],gemini:[{v:'gemini-2.0-flash',l:'Gemini 2.0 Flash (recommended)'},{v:'gemini-2.0-flash-lite',l:'Gemini 2.0 Flash Lite (fast)'},{v:'gemini-1.5-pro',l:'Gemini 1.5 Pro'}],copilot:[{v:'gpt-4o',l:'GPT-4o via Azure'},{v:'gpt-4',l:'GPT-4 via Azure'}]};
+
+function updateProviderUI(){
+  const prov=document.getElementById('ai-provider').value;
+  state.ai.provider=prov;
+  document.getElementById('ai-model').innerHTML=MODEL_OPTIONS[prov].map(m=>`<option value="${m.v}">${m.l}</option>`).join('');
+  document.getElementById('endpoint-row').style.display=prov==='copilot'?'block':'none';
+  const placeholders={claude:'sk-ant-...',openai:'sk-...',gemini:'AIza...',copilot:'Azure API key...'};
+  document.getElementById('api-key').placeholder=placeholders[prov];
+}
+
+function toggleApiKey(){const inp=document.getElementById('api-key');inp.type=inp.type==='password'?'text':'password';}
+
+async function testApiConnection(){
+  const key=document.getElementById('api-key').value.trim();
+  if(!key){showNotification('Please enter an API key');return;}
+  state.ai.key=key;state.ai.model=document.getElementById('ai-model').value;
+  const el=document.getElementById('api-test-result');
+  el.innerHTML='<span class="spinner"></span> Testing...';
+  try{const res=await callAI('Say "Connection OK" and nothing else.');el.innerHTML=`<span style="color:var(--easy)">✅ ${res.substring(0,60)}</span>`;}
+  catch(e){el.innerHTML=`<span style="color:var(--hard)">❌ ${e.message}</span>`;}
+}
+
+async function callAI(prompt,sys=''){
+  const key=document.getElementById('api-key').value.trim()||state.ai.key;
+  const model=document.getElementById('ai-model').value||state.ai.model;
+  const prov=document.getElementById('ai-provider').value||state.ai.provider;
+  if(!key)throw new Error('No API key. Go to AI Provider.');
+  if(prov==='claude'){
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model,max_tokens:4096,system:sys||'You are an expert instructional designer. Return only valid JSON.',messages:[{role:'user',content:prompt}]})});
+    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||r.statusText);}
+    return(await r.json()).content[0].text;
+  }
+  if(prov==='openai'){
+    const msgs=[];if(sys)msgs.push({role:'system',content:sys});msgs.push({role:'user',content:prompt});
+    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,max_tokens:4096,messages:msgs})});
+    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||r.statusText);}
+    return(await r.json()).choices[0].message.content;
+  }
+  if(prov==='gemini'){
+    const url=`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+    const parts=[];if(sys)parts.push({text:sys+'\n\n'});parts.push({text:prompt});
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts}]})});
+    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||r.statusText);}
+    return(await r.json()).candidates[0].content.parts[0].text;
+  }
+  if(prov==='copilot'){
+    const endpoint=document.getElementById('azure-endpoint').value.trim();
+    if(!endpoint)throw new Error('Azure endpoint URL required.');
+    const url=endpoint.replace(/\/$/,'')+`/openai/deployments/${model}/chat/completions?api-version=2024-02-15-preview`;
+    const msgs=[];if(sys)msgs.push({role:'system',content:sys});msgs.push({role:'user',content:prompt});
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','api-key':key},body:JSON.stringify({max_tokens:4096,messages:msgs})});
+    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||r.statusText);}
+    return(await r.json()).choices[0].message.content;
+  }
+  throw new Error('Unknown provider');
+}
+
+function switchGenTab(tab){
+  ['topic','upload'].forEach(t=>{
+    document.getElementById('gentab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('genp-'+t).classList.toggle('active',t===tab);
+  });
+}
+
+async function generateQuestions(){
+  const topic=document.getElementById('gen-topic').value.trim();
+  if(!topic){showNotification('Enter a topic first');return;}
+  const nEasy=parseInt(document.getElementById('gen-easy').value);
+  const nMed=parseInt(document.getElementById('gen-medium').value);
+  const nHard=parseInt(document.getElementById('gen-hard').value);
+  const ctx=document.getElementById('gen-context').value.trim();
+  document.getElementById('gen-spinner').style.display='inline';
+  const prompt=`Generate ${nEasy} EASY, ${nMed} MEDIUM, and ${nHard} HARD multiple choice questions about: "${topic}"
+${ctx?'Context: '+ctx:''}
+
+CRITICAL: Each option A, B, C, D must have its OWN specific feedback.
+- Correct option feedback: explain WHY it is right and reinforce the concept.
+- Each wrong option feedback: explain WHY that specific option is wrong and guide understanding.
+
+Return ONLY valid JSON (no markdown), this exact structure:
+{"questions":[{"pool":"easy","question":"...","options":{"A":"...","B":"...","C":"...","D":"..."},"correct":"B","feedback":{"A":"Specific feedback for A","B":"Specific feedback for B","C":"Specific feedback for C","D":"Specific feedback for D"}}]}`;
+  try{
+    const raw=await callAI(prompt);
+    const clean=raw.replace(/\`\`\`json|\`\`\`/g,'').trim();
+    const parsed=JSON.parse(clean);
+    parsed.questions.forEach(q=>addQuestion(q));
+    updateBadges();
+    showNotification(`✅ Added ${parsed.questions.length} questions!`);
+    showPanel('qa');
+  }catch(e){showNotification('❌ '+e.message);}
+  finally{document.getElementById('gen-spinner').style.display='none';}
+}
+
+function handleDocUpload(event){
+  const file=event.target.files[0];if(!file)return;
+  const statusEl=document.getElementById('upload-status');
+  statusEl.innerHTML=`<div class="alert alert-info">📄 Parsing ${file.name}...</div>`;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const parsed=parseDocTemplate(e.target.result);
+      if(!parsed.length)throw new Error('No questions found. Check template format.');
+      parsed.forEach(addQuestion);updateBadges();
+      statusEl.innerHTML=`<div class="alert alert-success">✅ Imported ${parsed.length} questions.</div>`;
+      showPanel('qa');
+    }catch(err){statusEl.innerHTML=`<div class="alert alert-error">❌ ${err.message}</div>`;}
+  };
+  reader.readAsText(file);
+}
+
+function parseDocTemplate(text){
+  const questions=[];
+  const blocks=text.split(/\[QUESTION\]/i).slice(1);
+  for(const block of blocks){
+    try{
+      const pool=(block.match(/\[POOL\]:\s*(\w+)/i)||[])[1]?.toLowerCase()||'easy';
+      const q=(block.match(/\[Q\]:\s*(.+)/i)||[])[1]?.trim();
+      const A=(block.match(/\[A\]:\s*(.+)/i)||[])[1]?.trim();
+      const B=(block.match(/\[B\]:\s*(.+)/i)||[])[1]?.trim();
+      const C=(block.match(/\[C\]:\s*(.+)/i)||[])[1]?.trim();
+      const D=(block.match(/\[D\]:\s*(.+)/i)||[])[1]?.trim();
+      const correct=(block.match(/\[CORRECT\]:\s*([ABCD])/i)||[])[1]?.toUpperCase();
+      const fbA=(block.match(/\[FB_A\]:\s*(.+)/i)||[])[1]?.trim()||'';
+      const fbB=(block.match(/\[FB_B\]:\s*(.+)/i)||[])[1]?.trim()||'';
+      const fbC=(block.match(/\[FB_C\]:\s*(.+)/i)||[])[1]?.trim()||'';
+      const fbD=(block.match(/\[FB_D\]:\s*(.+)/i)||[])[1]?.trim()||'';
+      if(q&&A&&B&&C&&D&&correct)questions.push({pool,question:q,options:{A,B,C,D},correct,feedback:{A:fbA,B:fbB,C:fbC,D:fbD}});
+    }catch(e){}
+  }
+  return questions;
+}
+
+let qIdCounter=1;
+function addQuestion(q){
+  state.questions.push({id:qIdCounter++,pool:q.pool||'easy',question:q.question,options:q.options,correct:q.correct,feedback:q.feedback||{A:'',B:'',C:'',D:''},status:'pending'});
+}
+
+function updateFbLabels(){
+  const correct=document.getElementById('manual-correct').value;
+  ['A','B','C','D'].forEach(k=>{
+    const lbl=document.getElementById('fblabel-'+k);
+    lbl.textContent=k===correct?`✅ Feedback for ${k} (correct)`:`Feedback for ${k}`;
+    lbl.className=k===correct?'fb-correct-label':'fb-wrong-label';
+  });
+}
+
+function addManualQuestion(){
+  const q=document.getElementById('manual-q').value.trim();
+  const pool=document.getElementById('manual-pool').value;
+  const correct=document.getElementById('manual-correct').value;
+  const A=document.getElementById('manual-opt-A').value.trim();
+  const B=document.getElementById('manual-opt-B').value.trim();
+  const C=document.getElementById('manual-opt-C').value.trim();
+  const D=document.getElementById('manual-opt-D').value.trim();
+  if(!q||!A||!B||!C||!D){showNotification('Fill all option fields');return;}
+  const feedback={A:document.getElementById('manual-fb-A').value.trim(),B:document.getElementById('manual-fb-B').value.trim(),C:document.getElementById('manual-fb-C').value.trim(),D:document.getElementById('manual-fb-D').value.trim()};
+  addQuestion({pool,question:q,options:{A,B,C,D},correct,feedback});
+  updateBadges();clearManualForm();showNotification('✅ Added to '+pool+' pool');
+}
+
+function clearManualForm(){
+  ['manual-q','manual-opt-A','manual-opt-B','manual-opt-C','manual-opt-D','manual-fb-A','manual-fb-B','manual-fb-C','manual-fb-D'].forEach(id=>document.getElementById(id).value='');
+}
+
+function deleteQuestion(id){
+  state.questions=state.questions.filter(q=>q.id!==id);
+  updateBadges();renderQA();renderPool(state.currentPool);
+}
+
+function updateBadges(){
+  ['easy','medium','hard'].forEach(pool=>document.getElementById('badge-'+pool).textContent=state.questions.filter(q=>q.pool===pool).length);
+}
+
+let qaFilter='all';
+function renderQA(){
+  let list=state.questions;
+  if(['easy','medium','hard'].includes(qaFilter))list=list.filter(q=>q.pool===qaFilter);
+  else if(qaFilter==='pending')list=list.filter(q=>q.status==='pending');
+  else if(qaFilter==='approved')list=list.filter(q=>q.status==='approved');
+  const el=document.getElementById('qa-list');
+  el.innerHTML=list.length?list.map(qaCard).join(''):'<div class="alert alert-info">No questions yet. Generate or add questions first.</div>';
+  ['easy','medium','hard'].forEach(pool=>{
+    const approved=state.questions.filter(q=>q.pool===pool&&q.status==='approved').length;
+    const total=state.questions.filter(q=>q.pool===pool).length;
+    document.getElementById('qa-count-'+pool).textContent=approved+'/'+total;
+  });
+}
+
+function qaCard(q){
+  const opts=Object.entries(q.options).map(([k,v])=>
+    `<span style="margin-right:10px;${k===q.correct?'color:var(--easy);font-weight:600':'color:var(--muted)'}"><span style="font-family:var(--font-mono);font-size:11px;">${k}.</span> ${v}${k===q.correct?' ✓':''}</span>`).join('');
+  const fbRows=Object.entries(q.feedback||{}).map(([k,v])=>{
+    const isc=k===q.correct;
+    return `<div style="background:${isc?'var(--easy-bg)':'var(--bg)'};border-radius:6px;padding:8px 10px;font-size:12px;">
+      <span style="font-weight:600;color:${isc?'var(--easy)':'var(--muted)'};font-family:var(--font-mono);">${k}${isc?' ✓':''}</span><span style="color:var(--muted);"> — </span>${v||'<em style="color:var(--muted)">No feedback written</em>'}
+    </div>`;
+  }).join('');
+  return `<div class="q-card" id="qa-card-${q.id}">
+    <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
+      <span class="q-num">#${q.id}</span><span class="pool-tag pool-${q.pool}">${q.pool}</span>
+      <span style="flex:1;font-size:13px;font-weight:500;">${q.question}</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:4px;${q.status==='approved'?'background:var(--easy-bg);color:var(--easy)':'background:var(--medium-bg);color:var(--medium)'}">${q.status}</span>
+    </div>
+    <div style="font-size:12px;margin-bottom:10px;">${opts}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;">${fbRows}</div>
+    <div style="display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border);">
+      <button class="btn btn-sm btn-primary" onclick="approveQuestion(${q.id})">✅ Approve</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${q.id})">🗑 Delete</button>
+    </div>
+  </div>`;
+}
+
+function filterQA(f,btn){qaFilter=f;document.querySelectorAll('.qa-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderQA();}
+function approveQuestion(id){const q=state.questions.find(q=>q.id===id);if(q){q.status='approved';renderQA();updateBadges();}}
+function approveAll(){state.questions.forEach(q=>q.status='approved');renderQA();updateBadges();showNotification('All questions approved!');}
+
+function renderPool(pool){
+  const list=state.questions.filter(q=>q.pool===pool);
+  const el=document.getElementById('pool-list');
+  if(!list.length){el.innerHTML='<div class="alert alert-info">No questions in this pool yet.</div>';return;}
+  el.innerHTML=list.map(q=>`<div class="q-card">
+    <div class="q-card-header"><span class="q-num">#${q.id}</span><span class="pool-tag pool-${q.pool}">${q.pool}</span><span style="font-size:11px;padding:2px 8px;border-radius:4px;${q.status==='approved'?'background:var(--easy-bg);color:var(--easy)':'background:var(--medium-bg);color:var(--medium)'}">${q.status}</span></div>
+    <div style="font-size:13px;font-weight:500;margin-bottom:10px;">${q.question}</div>
+    <div style="font-size:12px;color:var(--muted);">${Object.entries(q.options).map(([k,v])=>`<span style="margin-right:10px;${k===q.correct?'color:var(--easy);font-weight:600':''}"><span style="font-family:var(--font-mono);">${k}.</span> ${v}${k===q.correct?' ✓':''}</span>`).join('')}</div>
+    <div class="q-actions"><button class="btn btn-sm btn-danger" onclick="deleteQuestion(${q.id})">🗑 Delete</button></div>
+  </div>`).join('');
+}
+
+function renderOutputStats(){
+  ['easy','medium','hard'].forEach(pool=>document.getElementById('out-count-'+pool).textContent=state.questions.filter(q=>q.pool===pool&&q.status==='approved').length);
+}
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function generateRiseCode(){
+  const easy=state.questions.filter(q=>q.pool==='easy'&&q.status==='approved');
+  const medium=state.questions.filter(q=>q.pool==='medium'&&q.status==='approved');
+  const hard=state.questions.filter(q=>q.pool==='hard'&&q.status==='approved');
+  const alertEl=document.getElementById('output-alert');
+  if(easy.length<2||medium.length<2||hard.length<1){alertEl.innerHTML=`<div class="alert alert-error">Need at least 2 Easy, 2 Medium, 1 Hard approved. Currently: ${easy.length} easy, ${medium.length} medium, ${hard.length} hard.</div>`;return;}
+  alertEl.innerHTML='';
+  const selected=shuffle([...shuffle(easy).slice(0,2),...shuffle(medium).slice(0,2),...shuffle(hard).slice(0,1)]);
+  const code=buildRiseHTML(selected,state.config,state.config.maxAttempts);
+  document.getElementById('output-box').textContent=code;
+  document.getElementById('output-box-wrap').style.display='block';
+  showNotification('✅ Rise code generated (5 questions, 2+2+1)');
+}
+
+function buildRiseHTML(questions,cfg,maxAttempts){
+  const qJSON=JSON.stringify(questions.map(q=>({id:q.id,question:q.question,options:q.options,correct:q.correct,feedback:q.feedback,pool:q.pool})));
+  const title=cfg.title||'Knowledge Check';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${title}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:${cfg.bgColor};color:#0f172a;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px}
+.quiz-wrap{width:100%;max-width:680px}
+.quiz-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.quiz-sub{font-size:14px;color:#64748b;margin-bottom:20px}
+.progress-bar-wrap{height:4px;background:#e2e8f0;border-radius:2px;margin-bottom:28px;overflow:hidden}
+.progress-bar{height:100%;background:${cfg.primaryColor};border-radius:2px;transition:width 0.4s}
+.q-card{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;border:1px solid #e2e8f0;display:none}
+.q-card.active{display:block}
+.q-meta{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+.q-counter{font-size:12px;color:#64748b;margin-left:auto;font-family:monospace}
+.pool-badge{font-size:11px;padding:2px 10px;border-radius:20px}
+.q-text{font-size:15px;font-weight:500;line-height:1.55;margin-bottom:20px;white-space:pre-wrap}
+.option-btn{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;border:1.5px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:10px;cursor:pointer;font-size:14px;background:#fff;font-family:inherit;transition:all 0.15s;color:#0f172a;line-height:1.5}
+.option-btn:hover:not(:disabled){border-color:${cfg.primaryColor};background:#eff6ff}
+.option-btn:disabled{cursor:default}
+.opt-key{font-family:monospace;font-weight:700;font-size:13px;color:#94a3b8;min-width:20px;padding-top:1px;flex-shrink:0}
+.option-btn.correct-sel{border-color:${cfg.correctColor};background:${cfg.correctColor}18}
+.option-btn.correct-sel .opt-key{color:${cfg.correctColor}}
+.option-btn.wrong-sel{border-color:${cfg.incorrectColor};background:${cfg.incorrectColor}10}
+.option-btn.wrong-sel .opt-key{color:${cfg.incorrectColor}}
+.option-btn.reveal-correct{border-color:${cfg.correctColor};background:${cfg.correctColor}10}
+.option-btn.reveal-correct .opt-key{color:${cfg.correctColor}}
+.feedback{border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.6;margin-top:16px;display:none}
+.feedback.correct-fb{background:${cfg.correctColor}15;border-left:4px solid ${cfg.correctColor};color:#14532d}
+.feedback.wrong-fb{background:${cfg.incorrectColor}10;border-left:4px solid ${cfg.incorrectColor};color:#7f1d1d}
+.feedback.generic-fb{background:#fef3c7;border-left:4px solid #d97706;color:#78350f}
+.q-actions{display:flex;gap:10px;margin-top:18px;align-items:center;flex-wrap:wrap}
+.btn-next{background:${cfg.primaryColor};color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:none}
+.btn-retry{background:#fff;color:#0f172a;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:none}
+.attempt-dots{display:flex;gap:5px;margin-left:auto}
+.dot{width:8px;height:8px;border-radius:50%;background:#e2e8f0;transition:background 0.2s}
+.dot.used{background:${cfg.incorrectColor}}
+.dot.success{background:${cfg.correctColor}}
+.results{display:none;background:#fff;border-radius:12px;padding:32px;border:1px solid #e2e8f0;text-align:center}
+.score-ring{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:20px auto;font-size:28px;font-weight:700;border:4px solid ${cfg.primaryColor};color:${cfg.primaryColor}}
+.results h2{font-size:22px;font-weight:700;margin-bottom:8px}
+.results-sub{font-size:14px;color:#64748b;margin-bottom:20px}
+.btn-restart{background:${cfg.primaryColor};color:#fff;border:none;border-radius:8px;padding:12px 28px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+<div class="quiz-wrap">
+  <div class="quiz-title">${title}</div>
+  <div class="quiz-sub">Question <span id="qnum">1</span> of <span id="qtotal">5</span></div>
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+  <div id="questions-container"></div>
+  <div class="results" id="results">
+    <div class="score-ring" id="score-ring"></div>
+    <h2 id="results-title"></h2>
+    <p class="results-sub" id="results-sub"></p>
+    <button class="btn-restart" onclick="restartQuiz()">Restart Quiz</button>
+  </div>
+</div>
+<script>
+const QUESTIONS=${qJSON};
+const MAX_ATTEMPTS=${maxAttempts};
+let current=0,score=0,attempts=[];
+const poolColors={easy:'#16a34a',medium:'#d97706',hard:'#dc2626'};
+const poolBgs={easy:'#dcfce7',medium:'#fef3c7',hard:'#fee2e2'};
+
+function init(){
+  current=0;score=0;attempts=QUESTIONS.map(()=>0);
+  document.getElementById('qtotal').textContent=QUESTIONS.length;
+  document.getElementById('results').style.display='none';
+  buildQuestion(0);
+}
+
+function buildQuestion(idx){
+  const q=QUESTIONS[idx];
+  document.getElementById('qnum').textContent=idx+1;
+  document.getElementById('progress-bar').style.width=(idx/QUESTIONS.length*100)+'%';
+  const dots=MAX_ATTEMPTS>1?Array.from({length:MAX_ATTEMPTS},(_,i)=>\`<div class="dot" id="dot-\${idx}-\${i}"></div>\`).join(''):'';
+  const optHTML=Object.entries(q.options).map(([k,v])=>
+    \`<button class="option-btn" id="opt-\${idx}-\${k}" onclick="selectOption(\${idx},'\${k}')" data-key="\${k}">
+      <span class="opt-key">\${k}</span><span>\${v}</span>
+    </button>\`).join('');
+  document.getElementById('questions-container').innerHTML=\`<div class="q-card active" id="qcard-\${idx}">
+    <div class="q-meta">
+      <span class="pool-badge" style="background:\${poolBgs[q.pool]};color:\${poolColors[q.pool]}">\${q.pool}</span>
+      <span class="q-counter">\${idx+1}/\${QUESTIONS.length}</span>
+    </div>
+    <div class="q-text">\${q.question}</div>
+    \${optHTML}
+    <div class="feedback" id="fb-\${idx}"></div>
+    <div class="q-actions">
+      <button class="btn-retry" id="retry-\${idx}" onclick="retryQuestion(\${idx})">Try Again</button>
+      <button class="btn-next" id="next-\${idx}" onclick="nextQuestion(\${idx})">\${idx===QUESTIONS.length-1?'See Results':'Next Question →'}</button>
+      \${MAX_ATTEMPTS>1?\`<div class="attempt-dots" id="dots-\${idx}">\${dots}</div>\`:''}
+    </div>
+  </div>\`;
+}
+
+function selectOption(idx,key){
+  const q=QUESTIONS[idx];
+  attempts[idx]++;
+  const isCorrect=key===q.correct;
+  const isLastAttempt=attempts[idx]>=MAX_ATTEMPTS;
+  const fbEl=document.getElementById('fb-'+idx);
+  const retryBtn=document.getElementById('retry-'+idx);
+  const nextBtn=document.getElementById('next-'+idx);
+  document.querySelectorAll('[id^="opt-'+idx+'-"]').forEach(b=>b.disabled=true);
+  const selBtn=document.getElementById('opt-'+idx+'-'+key);
+
+  if(isCorrect){
+    selBtn.classList.add('correct-sel');
+    if(MAX_ATTEMPTS>1){const dot=document.getElementById('dot-'+idx+'-'+(attempts[idx]-1));if(dot)dot.classList.add('success');}
+    // Correct — always show specific feedback immediately
+    fbEl.className='feedback correct-fb';
+    fbEl.innerHTML='<strong>✅ Correct!</strong> '+(q.feedback[key]||'');
+    fbEl.style.display='block';
+    score++;
+    nextBtn.style.display='inline-block';
+  } else {
+    selBtn.classList.add('wrong-sel');
+    if(MAX_ATTEMPTS>1){const dot=document.getElementById('dot-'+idx+'-'+(attempts[idx]-1));if(dot)dot.classList.add('used');}
+    if(isLastAttempt){
+      // Final attempt wrong — show specific feedback for their chosen option + reveal correct
+      document.getElementById('opt-'+idx+'-'+q.correct).classList.add('reveal-correct');
+      fbEl.className='feedback wrong-fb';
+      fbEl.innerHTML='<strong>❌ Incorrect.</strong> '+(q.feedback[key]||'');
+      fbEl.style.display='block';
+      nextBtn.style.display='inline-block';
+    } else {
+      // Not final — generic only, no specific feedback yet
+      const left=MAX_ATTEMPTS-attempts[idx];
+      fbEl.className='feedback generic-fb';
+      fbEl.innerHTML='<strong>Not quite!</strong> Have another look and try again. ('+left+' attempt'+(left>1?'s':'')+' remaining)';
+      fbEl.style.display='block';
+      retryBtn.style.display='inline-block';
+    }
+  }
+}
+
+function retryQuestion(idx){
+  document.getElementById('retry-'+idx).style.display='none';
+  document.getElementById('fb-'+idx).style.display='none';
+  document.querySelectorAll('[id^="opt-'+idx+'-"]').forEach(btn=>{
+    btn.disabled=false;
+    btn.classList.remove('correct-sel','wrong-sel','reveal-correct');
+  });
+}
+
+function nextQuestion(idx){
+  if(idx>=QUESTIONS.length-1)showResults();
+  else{buildQuestion(idx+1);window.scrollTo(0,0);}
+}
+
+function showResults(){
+  document.getElementById('questions-container').innerHTML='';
+  document.getElementById('progress-bar').style.width='100%';
+  const pct=Math.round(score/QUESTIONS.length*100);
+  document.getElementById('score-ring').textContent=score+'/'+QUESTIONS.length;
+  document.getElementById('results-title').textContent=pct>=80?'🎉 Great job!':pct>=60?'👍 Good effort!':'📚 Keep learning!';
+  document.getElementById('results-sub').textContent='You scored '+pct+'% ('+score+' of '+QUESTIONS.length+' correct)';
+  document.getElementById('results').style.display='block';
+}
+
+function restartQuiz(){init();}
+init();
+<\/script>
+</body>
+</html>`;
+}
+
+function copyOutput(){
+  const text=document.getElementById('output-box').textContent;
+  if(!text){showNotification('Generate code first');return;}
+  navigator.clipboard.writeText(text).then(()=>showNotification('📋 Copied!'));
+}
+function downloadOutput(){
+  const text=document.getElementById('output-box').textContent;
+  if(!text){showNotification('Generate code first');return;}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'text/html'}));
+  a.download='mcq-quiz.html';a.click();
+  showNotification('⬇️ Downloaded mcq-quiz.html');
+}
+
+let notifTimer;
+function showNotification(msg){
+  const el=document.getElementById('notification');
+  el.textContent=msg;el.style.display='block';
+  clearTimeout(notifTimer);
+  notifTimer=setTimeout(()=>{el.style.display='none';},3000);
+}
+</script>
+</body>
+</html>
