@@ -721,9 +721,12 @@ function generateRiseCode(){
   if(total===0)errs.push('Set at least 1 question in the ratio');
   if(errs.length){alertEl.innerHTML=`<div class="alert alert-error">${errs.join('<br>')}</div>`;return;}
   alertEl.innerHTML='';
-  let selected=[...shuffle(easy).slice(0,nE),...shuffle(medium).slice(0,nM),...shuffle(hard).slice(0,nH)];
-  if(cfg.shuffled)selected=shuffle(selected);
-  else selected=[...easy.slice(0,nE),...medium.slice(0,nM),...hard.slice(0,nH)];
+  let selected;
+  if(cfg.shuffled){
+    selected=shuffle([...shuffle(easy).slice(0,nE),...shuffle(medium).slice(0,nM),...shuffle(hard).slice(0,nH)]);
+  } else {
+    selected=[...easy.slice(0,nE),...medium.slice(0,nM),...hard.slice(0,nH)];
+  }
   const code=buildRiseHTML(selected,cfg,cfg.maxAttempts);
   document.getElementById('output-box').textContent=code;
   document.getElementById('output-box-wrap').style.display='block';
@@ -1016,7 +1019,7 @@ function pvReset(qid){
 function previewFullQuiz(){
   const approved=state.questions.filter(q=>q.status==='approved');
   if(!approved.length){showNotification('Approve at least 1 question first');return;}
-  // All approved questions, ordered Easy -> Medium -> Hard, no randomisation
+  // Order: always Easy -> Medium -> Hard for QA preview (full set, no ratio applied)
   const selected=[
     ...approved.filter(q=>q.pool==='easy'),
     ...approved.filter(q=>q.pool==='medium'),
