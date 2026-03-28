@@ -2,7 +2,7 @@
 
 A free, open-source tool for Instructional Designers to build, review, and export multiple-choice questions (MCQs) for **Articulate Rise 360**.
 
-🌐 **Live app:** [https://mcqstudio-1081064604778.asia-south1.run.app](https://your-cloud-run-url.run.app)
+🌐 **Live app:** [mcqstudio-1081064604778.asia-south1.run.app](https://mcqstudio-1081064604778.asia-south1.run.app)
 
 ---
 
@@ -12,9 +12,13 @@ A free, open-source tool for Instructional Designers to build, review, and expor
 - **Choice-specific feedback** — every answer option (A, B, C, D) gets its own tailored feedback message
 - **Flexible attempt logic** — 1, 2, or 3 attempts with smart feedback reveal behaviour
 - **3-pool system** — Easy / Medium / Hard pools with QA review before export
-- **2:2:1 randomisation** — randomised draw of 2 Easy + 2 Medium + 1 Hard per quiz
+- **Configurable question ratio** — set exactly how many Easy, Medium, and Hard questions appear in your quiz (e.g. 3:2:1, 4:2:2, or any combination you need)
+- **Question order control** — choose Shuffled (randomised per learner) or Fixed Order (Easy → Medium → Hard)
+- **Display options** — show or hide the pool badge, progress bar, score screen, and restart button
 - **Rise 360 ready** — exports self-contained HTML to paste into a Rise Code Block
-- **Upload via template** — bulk import questions from a `.txt` file using the MCQ Studio template format
+- **QA preview** — preview individual questions or the full quiz in a new tab before exporting
+- **Shareable test link** — share a standalone HTML file with IDs or Storyline devs to test before publishing
+- **Upload via template** — bulk import questions from a .txt file using the MCQ Studio template format
 
 ---
 
@@ -33,7 +37,7 @@ Just open the live app URL above — no install needed.
 
 ### Run locally
 ```bash
-git clone https://github.com/YOUR_USERNAME/mcq-studio.git
+git clone https://github.com/linuxsunil/mcq-studio.git
 cd mcq-studio
 pip install -r requirements.txt
 python main.py
@@ -54,7 +58,7 @@ python main.py
 
 ## 📄 Question Template Format
 
-Upload questions in bulk using a `.txt` file with this structure:
+Upload questions in bulk using a .txt file with this structure:
 
 ```
 [QUESTION]
@@ -71,7 +75,7 @@ Upload questions in bulk using a `.txt` file with this structure:
 [FB_D]: Feedback explaining why D is wrong
 ```
 
-A sample question bank (DS_ML_30Q_ChoiceSpecific.docx) with 30 Data Science & ML questions is included.
+Sample question banks are included in the repo.
 
 ---
 
@@ -81,7 +85,7 @@ A sample question bank (DS_ML_30Q_ChoiceSpecific.docx) with 30 Data Science & ML
 gcloud run deploy mcq-studio \
   --source . \
   --platform managed \
-  --region europe-west1 \
+  --region asia-south1 \
   --allow-unauthenticated
 ```
 
@@ -96,7 +100,7 @@ mcq-studio/
 ├── requirements.txt        # Python dependencies
 ├── .gitignore
 ├── README.md
-└── DS_ML_30Q_ChoiceSpecific.docx   # Sample question bank (30 DS/ML questions)
+└── DS_ML_30Q_ChoiceSpecific.docx   # Sample question bank
 ```
 
 ---
@@ -108,6 +112,22 @@ mcq-studio/
 | Correct answer (any attempt) | That option's specific feedback immediately |
 | Wrong answer, not final attempt | Generic "Not quite, try again" |
 | Wrong answer, final attempt | That option's specific feedback + correct answer revealed |
+
+---
+
+## ⚙️ Configuration Options
+
+| Setting | Options |
+|---------|---------|
+| Brand colours | Primary, correct, incorrect, background |
+| Quiz title | Any text |
+| Attempts | 1, 2, or 3 |
+| Question ratio | Any number per pool (e.g. 2 Easy, 3 Medium, 2 Hard) |
+| Question order | Shuffled or Fixed (Easy → Medium → Hard) |
+| Pool badge | Show / Hide |
+| Progress bar | Show / Hide |
+| Score screen | Show / Hide |
+| Restart button | Show / Hide |
 
 ---
 
