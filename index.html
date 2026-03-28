@@ -89,6 +89,41 @@
   .upload-zone input[type="file"]{display:none}
   .ratio-badge{font-family:var(--font-mono);font-size:13px;font-weight:500;background:var(--accent-light);color:var(--accent);border-radius:6px;padding:4px 12px}
   .fb-legend{font-size:12px;color:var(--muted);margin-bottom:12px;padding:8px 12px;background:var(--bg);border-radius:6px;border-left:3px solid var(--accent);line-height:1.6}
+
+  /* Preview modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.open{display:flex}
+  .modal-box{background:#fff;border-radius:14px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+  .modal-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .modal-header h3{font-family:var(--font-display);font-size:15px;font-weight:600}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;padding:4px}
+  .modal-body{padding:0}
+  /* quiz inside modal */
+  .preview-quiz{padding:28px;font-family:'DM Sans',system-ui,sans-serif}
+  .pv-q-text{font-size:15px;font-weight:500;line-height:1.55;margin-bottom:20px;white-space:pre-wrap}
+  .pv-opt{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;border:1.5px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin-bottom:10px;cursor:pointer;font-size:14px;background:#fff;font-family:inherit;transition:all 0.15s;color:#0f172a;line-height:1.5}
+  .pv-opt:hover:not(:disabled){border-color:#2563eb;background:#eff6ff}
+  .pv-opt:disabled{cursor:default}
+  .pv-opt-key{font-family:monospace;font-weight:700;font-size:13px;color:#94a3b8;min-width:20px;flex-shrink:0}
+  .pv-opt.correct-sel{border-color:#16a34a;background:#dcfce718}
+  .pv-opt.correct-sel .pv-opt-key{color:#16a34a}
+  .pv-opt.wrong-sel{border-color:#dc2626;background:#fee2e210}
+  .pv-opt.wrong-sel .pv-opt-key{color:#dc2626}
+  .pv-opt.reveal-correct{border-color:#16a34a;background:#dcfce710}
+  .pv-opt.reveal-correct .pv-opt-key{color:#16a34a}
+  .pv-feedback{border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.6;margin-top:16px;display:none}
+  .pv-feedback.correct-fb{background:#dcfce715;border-left:4px solid #16a34a;color:#14532d}
+  .pv-feedback.wrong-fb{background:#fee2e210;border-left:4px solid #dc2626;color:#7f1d1d}
+  .pv-feedback.generic-fb{background:#fef3c7;border-left:4px solid #d97706;color:#78350f}
+  .pv-actions{display:flex;gap:10px;margin-top:18px;align-items:center}
+  .pv-btn{border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+  .pv-btn-retry{background:#fff;color:#0f172a;border:1.5px solid #e2e8f0;display:none}
+  .pv-btn-reset{background:#f1f5f9;color:#0f172a}
+  .pv-meta{display:flex;gap:8px;align-items:center;margin-bottom:16px}
+  .pv-attempts{font-size:12px;color:var(--muted);margin-left:auto}
+  .pv-dots{display:flex;gap:4px}
+  .pv-dot{width:8px;height:8px;border-radius:50%;background:#e2e8f0}
+  .pv-dot.used{background:#dc2626}.pv-dot.success{background:#16a34a}
   #notification{position:fixed;bottom:24px;right:24px;padding:12px 18px;background:#0f172a;color:#fff;border-radius:8px;font-size:13px;z-index:9999;display:none}
 </style>
 </head>
@@ -198,10 +233,10 @@
     <div class="tab-panel" id="genp-upload">
       <div class="card">
         <div class="upload-zone" onclick="document.getElementById('docx-upload').click()">
-          <input type="file" id="docx-upload" accept=".txt" onchange="handleDocUpload(event)">
+          <input type="file" id="docx-upload" accept=".txt,.docx" onchange="handleDocUpload(event)">
           <div style="font-size:28px;margin-bottom:8px;">📄</div>
           <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Drop your .txt file here or click to browse</div>
-          <div style="font-size:13px;color:var(--muted);">MCQ Studio template format with [FB_A] [FB_B] [FB_C] [FB_D] tags</div>
+          <div style="font-size:13px;color:var(--muted);">Upload .txt template file — save your Word doc as Plain Text (.txt) first</div>
         </div>
         <div id="upload-status"></div>
       </div>
@@ -258,6 +293,7 @@
       <button class="qa-filter-btn" onclick="filterQA('pending',this)">Pending</button>
       <button class="qa-filter-btn" onclick="filterQA('approved',this)">Approved</button>
       <button class="btn btn-sm" style="margin-left:auto;" onclick="approveAll()">Approve All</button>
+      <button class="btn btn-sm btn-primary" onclick="previewFullQuiz()">🎬 Preview Quiz</button>
     </div>
     <div id="qa-list"></div>
   </div>
@@ -287,11 +323,34 @@
       </div>
       <div id="output-alert"></div>
     </div>
+
+    <div id="share-link-wrap" style="display:none;margin-top:20px;">
+      <div class="card" style="border-color:var(--accent);">
+        <h3 style="font-family:var(--font-display);font-size:13px;margin-bottom:10px;">🔗 Shareable Test Link</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Send this link to IDs or Storyline devs to test the quiz in their browser — no Rise needed.</p>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="openPreviewWindow()">🚀 Open in New Tab</button>
+          <button class="btn btn-sm" onclick="copyShareLink()">📋 Copy Standalone HTML</button>
+          <span id="share-copied" style="font-size:12px;color:var(--easy);display:none;">✅ Copied!</span>
+        </div>
+      </div>
+    </div>
     <div id="output-box-wrap" style="display:none;">
       <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:8px;">Paste into a Rise 360 Code Block component:</div>
       <div class="output-box" id="output-box"></div>
     </div>
   </div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="preview-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="preview-modal-title">Question Preview</h3>
+      <button class="modal-close" onclick="closePreview()">✕</button>
+    </div>
+    <div class="modal-body" id="preview-modal-body"></div>
+  </div>
+</div>
 </main>
 
 <div id="notification"></div>
@@ -431,6 +490,16 @@ Return ONLY valid JSON (no markdown), this exact structure:
   finally{document.getElementById('gen-spinner').style.display='none';}
 }
 
+function cleanText(s){
+  if(!s)return'';
+  return s
+    .replace(/\u2014/g,'\u2014').replace(/\u2013/g,'\u2013')
+    .replace(/\u2018|\u2019/g,"'").replace(/\u201c|\u201d/g,'"')
+    .replace(/\u2026/g,'...').replace(/\u00a0/g,' ')
+    .replace(/[\ufffd\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'')
+    .trim();
+}
+
 function handleDocUpload(event){
   const file=event.target.files[0];if(!file)return;
   const statusEl=document.getElementById('upload-status');
@@ -441,30 +510,32 @@ function handleDocUpload(event){
       const parsed=parseDocTemplate(e.target.result);
       if(!parsed.length)throw new Error('No questions found. Check template format.');
       parsed.forEach(addQuestion);updateBadges();
-      statusEl.innerHTML=`<div class="alert alert-success">✅ Imported ${parsed.length} questions.</div>`;
+      statusEl.innerHTML=`<div class="alert alert-success">✅ Imported ${parsed.length} questions successfully.</div>`;
       showPanel('qa');
     }catch(err){statusEl.innerHTML=`<div class="alert alert-error">❌ ${err.message}</div>`;}
   };
-  reader.readAsText(file);
+  reader.readAsText(file,'UTF-8');
 }
 
 function parseDocTemplate(text){
   const questions=[];
+  text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
   const blocks=text.split(/\[QUESTION\]/i).slice(1);
   for(const block of blocks){
     try{
-      const pool=(block.match(/\[POOL\]:\s*(\w+)/i)||[])[1]?.toLowerCase()||'easy';
-      const q=(block.match(/\[Q\]:\s*(.+)/i)||[])[1]?.trim();
-      const A=(block.match(/\[A\]:\s*(.+)/i)||[])[1]?.trim();
-      const B=(block.match(/\[B\]:\s*(.+)/i)||[])[1]?.trim();
-      const C=(block.match(/\[C\]:\s*(.+)/i)||[])[1]?.trim();
-      const D=(block.match(/\[D\]:\s*(.+)/i)||[])[1]?.trim();
-      const correct=(block.match(/\[CORRECT\]:\s*([ABCD])/i)||[])[1]?.toUpperCase();
-      const fbA=(block.match(/\[FB_A\]:\s*(.+)/i)||[])[1]?.trim()||'';
-      const fbB=(block.match(/\[FB_B\]:\s*(.+)/i)||[])[1]?.trim()||'';
-      const fbC=(block.match(/\[FB_C\]:\s*(.+)/i)||[])[1]?.trim()||'';
-      const fbD=(block.match(/\[FB_D\]:\s*(.+)/i)||[])[1]?.trim()||'';
-      if(q&&A&&B&&C&&D&&correct)questions.push({pool,question:q,options:{A,B,C,D},correct,feedback:{A:fbA,B:fbB,C:fbC,D:fbD}});
+      const pool=cleanText((block.match(/\[POOL\]:\s*(.+)/i)||[])[1])?.toLowerCase()||'easy';
+      const qMatch=block.match(/\[Q\]:\s*([\s\S]+?)(?=\[A\]:)/i);
+      const q=cleanText(qMatch?.[1]);
+      const A=cleanText((block.match(/\[A\]:\s*(.+)/i)||[])[1]);
+      const B=cleanText((block.match(/\[B\]:\s*(.+)/i)||[])[1]);
+      const C=cleanText((block.match(/\[C\]:\s*(.+)/i)||[])[1]);
+      const D=cleanText((block.match(/\[D\]:\s*(.+)/i)||[])[1]);
+      const correct=cleanText((block.match(/\[CORRECT\]:\s*([ABCD])/i)||[])[1])?.toUpperCase();
+      const fbA=cleanText((block.match(/\[FB_A\]:\s*([\s\S]+?)(?=\[FB_B\]:|$)/i)||[])[1]);
+      const fbB=cleanText((block.match(/\[FB_B\]:\s*([\s\S]+?)(?=\[FB_C\]:|$)/i)||[])[1]);
+      const fbC=cleanText((block.match(/\[FB_C\]:\s*([\s\S]+?)(?=\[FB_D\]:|$)/i)||[])[1]);
+      const fbD=cleanText((block.match(/\[FB_D\]:\s*([\s\S]+?)(?=\[QUESTION\]|$)/i)||[])[1]);
+      if(q&&A&&B&&C&&D&&correct)questions.push({pool,question:q,options:{A,B,C,D},correct,feedback:{A:fbA||'',B:fbB||'',C:fbC||'',D:fbD||''}});
     }catch(e){}
   }
   return questions;
@@ -544,6 +615,7 @@ function qaCard(q){
     <div style="font-size:12px;margin-bottom:10px;">${opts}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;">${fbRows}</div>
     <div style="display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border);">
+      <button class="btn btn-sm" onclick="previewQuestion(${q.id})">👁 Preview</button>
       <button class="btn btn-sm btn-primary" onclick="approveQuestion(${q.id})">✅ Approve</button>
       <button class="btn btn-sm btn-danger" onclick="deleteQuestion(${q.id})">🗑 Delete</button>
     </div>
@@ -583,6 +655,7 @@ function generateRiseCode(){
   const code=buildRiseHTML(selected,state.config,state.config.maxAttempts);
   document.getElementById('output-box').textContent=code;
   document.getElementById('output-box-wrap').style.display='block';
+  document.getElementById('share-link-wrap').style.display='block';
   showNotification('✅ Rise code generated (5 questions, 2+2+1)');
 }
 
@@ -773,6 +846,139 @@ function downloadOutput(){
   a.download='mcq-quiz.html';a.click();
   showNotification('⬇️ Downloaded mcq-quiz.html');
 }
+
+// ─── PREVIEW FUNCTIONS ───────────────────────────────────────────────────────
+
+let previewAttempts={};
+
+function closePreview(){
+  document.getElementById('preview-modal').classList.remove('open');
+}
+
+function previewQuestion(id){
+  const q=state.questions.find(x=>x.id===id);
+  if(!q)return;
+  previewAttempts={};
+  document.getElementById('preview-modal-title').textContent='Preview — Q#'+id+' ('+q.pool+')';
+  document.getElementById('preview-modal-body').innerHTML=buildSinglePreview(q);
+  document.getElementById('preview-modal').classList.add('open');
+}
+
+function buildSinglePreview(q){
+  const maxA=state.config.maxAttempts;
+  const dots=maxA>1?Array.from({length:maxA},(_,i)=>`<div class="pv-dot" id="pvd-${q.id}-${i}"></div>`).join(''):'';
+  const optHTML=Object.entries(q.options).map(([k,v])=>
+    `<button class="pv-opt" id="pvo-${q.id}-${k}" onclick="pvSelect('${q.id}','${k}')" data-key="${k}">
+      <span class="pv-opt-key">${k}</span><span>${v}</span>
+    </button>`).join('');
+  return `<div class="preview-quiz">
+    <div class="pv-meta">
+      <span class="pool-tag pool-${q.pool}">${q.pool}</span>
+      ${maxA>1?`<div class="pv-dots" id="pvdots-${q.id}">${dots}</div>`:''}
+      <span class="pv-attempts" id="pva-${q.id}">${maxA} attempt${maxA>1?'s':''}</span>
+    </div>
+    <div class="pv-q-text">${q.question}</div>
+    ${optHTML}
+    <div class="pv-feedback" id="pvf-${q.id}"></div>
+    <div class="pv-actions">
+      <button class="pv-btn pv-btn-retry" id="pvr-${q.id}" onclick="pvRetry('${q.id}')">Try Again</button>
+      <button class="pv-btn pv-btn-reset" onclick="pvReset('${q.id}')">↺ Reset</button>
+    </div>
+  </div>`;
+}
+
+function pvSelect(qid,key){
+  const q=state.questions.find(x=>x.id==qid);
+  if(!q)return;
+  const maxA=state.config.maxAttempts;
+  if(!previewAttempts[qid])previewAttempts[qid]=0;
+  previewAttempts[qid]++;
+  const att=previewAttempts[qid];
+  const isCorrect=key===q.correct;
+  const isLast=att>=maxA;
+  document.querySelectorAll(`[id^="pvo-${qid}-"]`).forEach(b=>b.disabled=true);
+  const selBtn=document.getElementById(`pvo-${qid}-${key}`);
+  const fbEl=document.getElementById(`pvf-${qid}`);
+  const retryBtn=document.getElementById(`pvr-${qid}`);
+  const attEl=document.getElementById(`pva-${qid}`);
+  if(maxA>1&&attEl)attEl.textContent=`Attempt ${att}/${maxA}`;
+  if(isCorrect){
+    selBtn.classList.add('correct-sel');
+    if(maxA>1){const dot=document.getElementById(`pvd-${qid}-${att-1}`);if(dot)dot.classList.add('success');}
+    fbEl.className='pv-feedback correct-fb';
+    fbEl.innerHTML='<strong>✅ Correct!</strong> '+(q.feedback[key]||'Well done!');
+    fbEl.style.display='block';
+  } else {
+    selBtn.classList.add('wrong-sel');
+    if(maxA>1){const dot=document.getElementById(`pvd-${qid}-${att-1}`);if(dot)dot.classList.add('used');}
+    if(isLast){
+      document.getElementById(`pvo-${qid}-${q.correct}`).classList.add('reveal-correct');
+      fbEl.className='pv-feedback wrong-fb';
+      fbEl.innerHTML='<strong>❌ Incorrect.</strong> '+(q.feedback[key]||'');
+      fbEl.style.display='block';
+    } else {
+      const left=maxA-att;
+      fbEl.className='pv-feedback generic-fb';
+      fbEl.innerHTML=`<strong>Not quite!</strong> Have another look and try again. (${left} attempt${left>1?'s':''} remaining)`;
+      fbEl.style.display='block';
+      retryBtn.style.display='inline-block';
+    }
+  }
+}
+
+function pvRetry(qid){
+  document.getElementById(`pvr-${qid}`).style.display='none';
+  document.getElementById(`pvf-${qid}`).style.display='none';
+  document.querySelectorAll(`[id^="pvo-${qid}-"]`).forEach(b=>{b.disabled=false;b.classList.remove('correct-sel','wrong-sel','reveal-correct');});
+}
+
+function pvReset(qid){
+  previewAttempts[qid]=0;
+  const q=state.questions.find(x=>x.id==qid);
+  if(!q)return;
+  document.getElementById('preview-modal-body').innerHTML=buildSinglePreview(q);
+}
+
+function previewFullQuiz(){
+  const approved=state.questions.filter(q=>q.status==='approved');
+  if(!approved.length){showNotification('Approve at least 1 question first');return;}
+  const easy=approved.filter(q=>q.pool==='easy');
+  const medium=approved.filter(q=>q.pool==='medium');
+  const hard=approved.filter(q=>q.pool==='hard');
+  // Use what we have, minimum 1 of each present pool
+  let selected=[];
+  if(easy.length)selected.push(...shuffle(easy).slice(0,Math.min(2,easy.length)));
+  if(medium.length)selected.push(...shuffle(medium).slice(0,Math.min(2,medium.length)));
+  if(hard.length)selected.push(...shuffle(hard).slice(0,Math.min(1,hard.length)));
+  selected=shuffle(selected);
+  const html=buildRiseHTML(selected,state.config,state.config.maxAttempts);
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+}
+
+function openPreviewWindow(){
+  const code=document.getElementById('output-box').textContent;
+  if(!code){showNotification('Generate Rise code first');return;}
+  const win=window.open('','_blank');
+  win.document.write(code);
+  win.document.close();
+}
+
+function copyShareLink(){
+  const code=document.getElementById('output-box').textContent;
+  if(!code){showNotification('Generate Rise code first');return;}
+  navigator.clipboard.writeText(code).then(()=>{
+    const el=document.getElementById('share-copied');
+    el.style.display='inline';
+    setTimeout(()=>el.style.display='none',2500);
+  });
+}
+
+// Close modal on overlay click
+document.getElementById('preview-modal').addEventListener('click',function(e){
+  if(e.target===this)closePreview();
+});
 
 let notifTimer;
 function showNotification(msg){
