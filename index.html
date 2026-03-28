@@ -788,11 +788,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:${cfg.bgColor};color:
 <div class="quiz-wrap">
   <div class="quiz-title">${title}</div>
   <div class="quiz-sub">Question <span id="qnum">1</span> of <span id="qtotal">5</span></div>
-  \${cfg.showProgress!==false?'<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>':''}
+  ${cfg.showProgress!==false?'<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>':''}
   <div id="questions-container"></div>
   <div class="results" id="results" style="display:none">
-    \${SHOW_SCORE?'<div class="score-ring" id="score-ring"></div><h2 id="results-title"></h2><p class="results-sub" id="results-sub"></p>':'<h2 id="results-title" style="margin-bottom:8px"></h2><p class="results-sub" id="results-sub"></p>'}
-    \${SHOW_RESTART?'<button class="btn-restart" onclick="restartQuiz()">Restart Quiz</button>':''} 
+    ${cfg.showScore!==false?'<div class="score-ring" id="score-ring"></div><h2 id="results-title"></h2><p class="results-sub" id="results-sub"></p>':'<h2 id="results-title" style="margin-bottom:8px"></h2><p class="results-sub" id="results-sub"></p>'}
+    ${cfg.showRestart!==false?'<button class="btn-restart" onclick="restartQuiz()">Restart Quiz</button>':''} 
   </div>
 </div>
 <script>
@@ -824,7 +824,7 @@ function buildQuestion(idx){
     </button>\`).join('');
   document.getElementById('questions-container').innerHTML=\`<div class="q-card active" id="qcard-\${idx}">
     <div class="q-meta">
-      ${SHOW_BADGE?`<span class="pool-badge" style="background:\${poolBgs[q.pool]};color:\${poolColors[q.pool]}">\${q.pool}</span>`:""}
+      ${cfg.showBadge!==false?'<span class="pool-badge" style="background:\${poolBgs[q.pool]};color:\${poolColors[q.pool]}">\${q.pool}</span>':''}
       <span class="q-counter">\${idx+1}/\${QUESTIONS.length}</span>
     </div>
     <div class="q-text">\${q.question}</div>
