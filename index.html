@@ -153,7 +153,8 @@
   <!-- CONFIG -->
   <div class="panel active" id="panel-config">
     <div class="panel-heading">Configuration</div>
-    <div class="panel-sub">Set brand colors and attempt behavior.</div>
+    <div class="panel-sub">Set brand colors, quiz structure, attempts and display options.</div>
+
     <div class="card">
       <h3 style="font-family:var(--font-display);font-size:14px;margin-bottom:16px;">🎨 Brand Colors</h3>
       <div class="grid-2">
@@ -163,17 +164,76 @@
         <div class="form-group"><label>Background Color</label><div class="color-row"><input type="color" id="color-bg" value="#f8fafc"><input type="text" id="color-bg-hex" value="#f8fafc" style="width:100px;font-family:var(--font-mono);"></div></div>
       </div>
     </div>
+
+    <div class="card">
+      <h3 style="font-family:var(--font-display);font-size:14px;margin-bottom:16px;">📋 Quiz Structure</h3>
+      <div class="form-group"><label>Quiz Title</label><input type="text" id="quiz-title" value="Knowledge Check" style="width:100%;"></div>
+      <div style="margin-bottom:16px;">
+        <label style="margin-bottom:8px;">Questions per Pool <span style="color:var(--muted);font-weight:400;">(drawn randomly from approved pool)</span></label>
+        <div class="grid-3">
+          <div class="form-group">
+            <label style="color:var(--easy);">🟢 Easy</label>
+            <input type="number" id="ratio-easy" value="2" min="0" max="20" style="width:100%;" oninput="updateRatioPreview()">
+          </div>
+          <div class="form-group">
+            <label style="color:var(--medium);">🟡 Medium</label>
+            <input type="number" id="ratio-medium" value="2" min="0" max="20" style="width:100%;" oninput="updateRatioPreview()">
+          </div>
+          <div class="form-group">
+            <label style="color:var(--hard);">🔴 Hard</label>
+            <input type="number" id="ratio-hard" value="1" min="0" max="20" style="width:100%;" oninput="updateRatioPreview()">
+          </div>
+        </div>
+        <div id="ratio-preview" style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+          <span class="ratio-badge" id="ratio-badge-display">2 Easy : 2 Medium : 1 Hard</span>
+          <span style="font-size:12px;color:var(--muted);" id="ratio-total-display">= 5 questions total</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Question Order</label>
+        <div style="display:flex;gap:10px;margin-top:6px;">
+          <div class="attempt-opt selected" id="order-shuffled" onclick="selectOrder('shuffled')" style="flex:1;padding:10px 14px;">
+            <h4>🔀 Shuffled</h4><p>Questions drawn and randomised for each learner.</p>
+          </div>
+          <div class="attempt-opt" id="order-fixed" onclick="selectOrder('fixed')" style="flex:1;padding:10px 14px;">
+            <h4>📋 Fixed Order</h4><p>Easy first, then Medium, then Hard — no shuffle.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <h3 style="font-family:var(--font-display);font-size:14px;margin-bottom:8px;">🎯 Attempt Settings</h3>
-      <div class="fb-legend" style="margin-bottom:14px;"><strong>Feedback logic:</strong> ✅ Correct answer → that option's specific feedback shown immediately (any attempt). ❌ Wrong answer → generic "try again" on early attempts; the specific feedback for whichever wrong option was chosen is only revealed on the final attempt.</div>
-      <div class="attempt-opt selected" id="attempt-1" onclick="selectAttempt(1)"><h4>1 Attempt</h4><p>Single shot. Specific option feedback (correct or wrong) shown immediately.</p></div>
-      <div class="attempt-opt" id="attempt-2" onclick="selectAttempt(2)"><h4>2 Attempts</h4><p>Wrong on attempt 1 → generic retry. Attempt 2 → specific per-option feedback revealed.</p></div>
-      <div class="attempt-opt" id="attempt-3" onclick="selectAttempt(3)"><h4>3 Attempts</h4><p>Wrong on attempts 1 & 2 → generic retry each time. Attempt 3 → specific per-option feedback revealed.</p></div>
+      <div class="fb-legend" style="margin-bottom:14px;"><strong>Feedback logic:</strong> ✅ Correct → specific feedback immediately. ❌ Wrong (not final attempt) → generic retry. ❌ Wrong (final attempt) → specific feedback + correct answer revealed.</div>
+      <div class="grid-3">
+        <div class="attempt-opt selected" id="attempt-1" onclick="selectAttempt(1)"><h4>1 Attempt</h4><p>Immediate specific feedback.</p></div>
+        <div class="attempt-opt" id="attempt-2" onclick="selectAttempt(2)"><h4>2 Attempts</h4><p>Generic on attempt 1, specific on attempt 2.</p></div>
+        <div class="attempt-opt" id="attempt-3" onclick="selectAttempt(3)"><h4>3 Attempts</h4><p>Generic on 1 & 2, specific on attempt 3.</p></div>
+      </div>
     </div>
+
     <div class="card">
-      <div class="form-group"><label>Quiz Title</label><input type="text" id="quiz-title" value="Knowledge Check" style="width:100%;"></div>
-      <div style="display:flex;align-items:center;gap:8px;"><span class="ratio-badge">2 Easy : 2 Medium : 1 Hard</span><span style="font-size:12px;color:var(--muted);">fixed randomisation ratio</span></div>
+      <h3 style="font-family:var(--font-display);font-size:14px;margin-bottom:14px;">👁 Display Options</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;">
+          <input type="checkbox" id="show-badge" checked onchange="updateDisplayConfig()" style="width:16px;height:16px;accent-color:var(--accent);">
+          <div><div style="font-size:13px;font-weight:500;">Pool Badge</div><div style="font-size:11px;color:var(--muted);">Show Easy / Medium / Hard label</div></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;">
+          <input type="checkbox" id="show-progress" checked onchange="updateDisplayConfig()" style="width:16px;height:16px;accent-color:var(--accent);">
+          <div><div style="font-size:13px;font-weight:500;">Progress Bar</div><div style="font-size:11px;color:var(--muted);">Show progress at top</div></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;">
+          <input type="checkbox" id="show-score" checked onchange="updateDisplayConfig()" style="width:16px;height:16px;accent-color:var(--accent);">
+          <div><div style="font-size:13px;font-weight:500;">Score Screen</div><div style="font-size:11px;color:var(--muted);">Show final score at end</div></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;">
+          <input type="checkbox" id="show-restart" checked onchange="updateDisplayConfig()" style="width:16px;height:16px;accent-color:var(--accent);">
+          <div><div style="font-size:13px;font-weight:500;">Restart Button</div><div style="font-size:11px;color:var(--muted);">Allow learner to retake</div></div>
+        </label>
+      </div>
     </div>
+
     <button class="btn btn-primary" onclick="showPanel('api')">Next: Set AI Provider →</button>
   </div>
 
@@ -308,14 +368,14 @@
   <!-- OUTPUT -->
   <div class="panel" id="panel-output">
     <div class="panel-heading">Generate Rise 360 Code</div>
-    <div class="panel-sub">Randomizes 2:2:1 from approved pools and exports a self-contained Rise 360 HTML block.</div>
+    <div class="panel-sub">Draws from approved pools using your configured ratio and exports a self-contained Rise 360 HTML block.</div>
     <div class="pool-stats">
       <div class="stat-card easy-card"><div class="stat-num" id="out-count-easy">0</div><div class="stat-label">Easy approved</div></div>
       <div class="stat-card medium-card"><div class="stat-num" id="out-count-medium">0</div><div class="stat-label">Medium approved</div></div>
       <div class="stat-card hard-card"><div class="stat-num" id="out-count-hard">0</div><div class="stat-label">Hard approved</div></div>
     </div>
     <div class="card">
-      <p style="font-size:13px;margin-bottom:14px;">Draws <strong>2 easy + 2 medium + 1 hard</strong> questions randomly. Correct answer → specific feedback immediately. Wrong answer → generic retry on early attempts, specific option feedback on final attempt.</p>
+      <p style="font-size:13px;margin-bottom:14px;" id="output-desc">Draws questions per your configured ratio. Correct answer → specific feedback immediately. Wrong answer → generic retry on early attempts, specific option feedback on final attempt.</p>
       <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
         <button class="btn btn-primary" onclick="generateRiseCode()">🎲 Randomize &amp; Generate Code</button>
         <button class="btn" onclick="copyOutput()">📋 Copy Code</button>
@@ -356,7 +416,7 @@
 <div id="notification"></div>
 
 <script>
-const state={questions:[],config:{primaryColor:'#2563eb',correctColor:'#16a34a',incorrectColor:'#dc2626',bgColor:'#f8fafc',maxAttempts:1,title:'Knowledge Check'},ai:{provider:'claude',model:'claude-sonnet-4-20250514',key:'',endpoint:''},currentPool:'easy'};
+const state={questions:[],config:{primaryColor:'#2563eb',correctColor:'#16a34a',incorrectColor:'#dc2626',bgColor:'#f8fafc',maxAttempts:1,title:'Knowledge Check',nEasy:2,nMedium:2,nHard:1,shuffled:true,showBadge:true,showProgress:true,showScore:true,showRestart:true},ai:{provider:'claude',model:'claude-sonnet-4-20250514',key:'',endpoint:''},currentPool:'easy'};
 
 function showPanel(id){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -640,23 +700,35 @@ function renderPool(pool){
 
 function renderOutputStats(){
   ['easy','medium','hard'].forEach(pool=>document.getElementById('out-count-'+pool).textContent=state.questions.filter(q=>q.pool===pool&&q.status==='approved').length);
+  const cfg=state.config;const d=document.getElementById('output-desc');
+  if(d)d.innerHTML=`Draws <strong>${cfg.nEasy} Easy + ${cfg.nMedium} Medium + ${cfg.nHard} Hard</strong> (${cfg.nEasy+cfg.nMedium+cfg.nHard} total). ${cfg.shuffled?'Shuffled randomly.':'Fixed order: Easy → Medium → Hard.'} Correct → specific feedback immediately. Wrong → generic retry, specific on final attempt.`;
 }
 
 function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 function generateRiseCode(){
+  const cfg=state.config;
+  const nE=parseInt(cfg.nEasy)||0,nM=parseInt(cfg.nMedium)||0,nH=parseInt(cfg.nHard)||0;
+  const total=nE+nM+nH;
   const easy=state.questions.filter(q=>q.pool==='easy'&&q.status==='approved');
   const medium=state.questions.filter(q=>q.pool==='medium'&&q.status==='approved');
   const hard=state.questions.filter(q=>q.pool==='hard'&&q.status==='approved');
   const alertEl=document.getElementById('output-alert');
-  if(easy.length<2||medium.length<2||hard.length<1){alertEl.innerHTML=`<div class="alert alert-error">Need at least 2 Easy, 2 Medium, 1 Hard approved. Currently: ${easy.length} easy, ${medium.length} medium, ${hard.length} hard.</div>`;return;}
+  const errs=[];
+  if(nE>0&&easy.length<nE)errs.push(`Need ${nE} Easy approved (have ${easy.length})`);
+  if(nM>0&&medium.length<nM)errs.push(`Need ${nM} Medium approved (have ${medium.length})`);
+  if(nH>0&&hard.length<nH)errs.push(`Need ${nH} Hard approved (have ${hard.length})`);
+  if(total===0)errs.push('Set at least 1 question in the ratio');
+  if(errs.length){alertEl.innerHTML=`<div class="alert alert-error">${errs.join('<br>')}</div>`;return;}
   alertEl.innerHTML='';
-  const selected=shuffle([...shuffle(easy).slice(0,2),...shuffle(medium).slice(0,2),...shuffle(hard).slice(0,1)]);
-  const code=buildRiseHTML(selected,state.config,state.config.maxAttempts);
+  let selected=[...shuffle(easy).slice(0,nE),...shuffle(medium).slice(0,nM),...shuffle(hard).slice(0,nH)];
+  if(cfg.shuffled)selected=shuffle(selected);
+  else selected=[...easy.slice(0,nE),...medium.slice(0,nM),...hard.slice(0,nH)];
+  const code=buildRiseHTML(selected,cfg,cfg.maxAttempts);
   document.getElementById('output-box').textContent=code;
   document.getElementById('output-box-wrap').style.display='block';
   document.getElementById('share-link-wrap').style.display='block';
-  showNotification('✅ Rise code generated (5 questions, 2+2+1)');
+  showNotification(`✅ Rise code generated (${total} questions: ${nE}E+${nM}M+${nH}H)`);
 }
 
 function buildRiseHTML(questions,cfg,maxAttempts){
@@ -713,18 +785,20 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:${cfg.bgColor};color:
 <div class="quiz-wrap">
   <div class="quiz-title">${title}</div>
   <div class="quiz-sub">Question <span id="qnum">1</span> of <span id="qtotal">5</span></div>
-  <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+  \${cfg.showProgress!==false?'<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>':''}
   <div id="questions-container"></div>
-  <div class="results" id="results">
-    <div class="score-ring" id="score-ring"></div>
-    <h2 id="results-title"></h2>
-    <p class="results-sub" id="results-sub"></p>
-    <button class="btn-restart" onclick="restartQuiz()">Restart Quiz</button>
+  <div class="results" id="results" style="display:none">
+    \${SHOW_SCORE?'<div class="score-ring" id="score-ring"></div><h2 id="results-title"></h2><p class="results-sub" id="results-sub"></p>':'<h2 id="results-title" style="margin-bottom:8px"></h2><p class="results-sub" id="results-sub"></p>'}
+    \${SHOW_RESTART?'<button class="btn-restart" onclick="restartQuiz()">Restart Quiz</button>':''} 
   </div>
 </div>
 <script>
 const QUESTIONS=${qJSON};
 const MAX_ATTEMPTS=${maxAttempts};
+const SHOW_BADGE=${cfg.showBadge?'true':'false'};
+const SHOW_PROGRESS=${cfg.showProgress?'true':'false'};
+const SHOW_SCORE=${cfg.showScore?'true':'false'};
+const SHOW_RESTART=${cfg.showRestart?'true':'false'};
 let current=0,score=0,attempts=[];
 const poolColors={easy:'#16a34a',medium:'#d97706',hard:'#dc2626'};
 const poolBgs={easy:'#dcfce7',medium:'#fef3c7',hard:'#fee2e2'};
@@ -739,7 +813,7 @@ function init(){
 function buildQuestion(idx){
   const q=QUESTIONS[idx];
   document.getElementById('qnum').textContent=idx+1;
-  document.getElementById('progress-bar').style.width=(idx/QUESTIONS.length*100)+'%';
+  if(SHOW_PROGRESS){const pb=document.getElementById('progress-bar');if(pb)pb.style.width=(idx/QUESTIONS.length*100)+'%';}
   const dots=MAX_ATTEMPTS>1?Array.from({length:MAX_ATTEMPTS},(_,i)=>\`<div class="dot" id="dot-\${idx}-\${i}"></div>\`).join(''):'';
   const optHTML=Object.entries(q.options).map(([k,v])=>
     \`<button class="option-btn" id="opt-\${idx}-\${k}" onclick="selectOption(\${idx},'\${k}')" data-key="\${k}">
@@ -747,7 +821,7 @@ function buildQuestion(idx){
     </button>\`).join('');
   document.getElementById('questions-container').innerHTML=\`<div class="q-card active" id="qcard-\${idx}">
     <div class="q-meta">
-      <span class="pool-badge" style="background:\${poolBgs[q.pool]};color:\${poolColors[q.pool]}">\${q.pool}</span>
+      ${SHOW_BADGE?`<span class="pool-badge" style="background:\${poolBgs[q.pool]};color:\${poolColors[q.pool]}">\${q.pool}</span>`:""}
       <span class="q-counter">\${idx+1}/\${QUESTIONS.length}</span>
     </div>
     <div class="q-text">\${q.question}</div>
@@ -818,12 +892,12 @@ function nextQuestion(idx){
 
 function showResults(){
   document.getElementById('questions-container').innerHTML='';
-  document.getElementById('progress-bar').style.width='100%';
+  if(SHOW_PROGRESS){const pb=document.getElementById('progress-bar');if(pb)pb.style.width='100%';}
   const pct=Math.round(score/QUESTIONS.length*100);
   document.getElementById('score-ring').textContent=score+'/'+QUESTIONS.length;
   document.getElementById('results-title').textContent=pct>=80?'🎉 Great job!':pct>=60?'👍 Good effort!':'📚 Keep learning!';
   document.getElementById('results-sub').textContent='You scored '+pct+'% ('+score+' of '+QUESTIONS.length+' correct)';
-  document.getElementById('results').style.display='block';
+  const res=document.getElementById('results');if(res)res.style.display='block';
 }
 
 function restartQuiz(){init();}
@@ -942,15 +1016,12 @@ function pvReset(qid){
 function previewFullQuiz(){
   const approved=state.questions.filter(q=>q.status==='approved');
   if(!approved.length){showNotification('Approve at least 1 question first');return;}
-  const easy=approved.filter(q=>q.pool==='easy');
-  const medium=approved.filter(q=>q.pool==='medium');
-  const hard=approved.filter(q=>q.pool==='hard');
-  // Use what we have, minimum 1 of each present pool
-  let selected=[];
-  if(easy.length)selected.push(...shuffle(easy).slice(0,Math.min(2,easy.length)));
-  if(medium.length)selected.push(...shuffle(medium).slice(0,Math.min(2,medium.length)));
-  if(hard.length)selected.push(...shuffle(hard).slice(0,Math.min(1,hard.length)));
-  selected=shuffle(selected);
+  // All approved questions, ordered Easy -> Medium -> Hard, no randomisation
+  const selected=[
+    ...approved.filter(q=>q.pool==='easy'),
+    ...approved.filter(q=>q.pool==='medium'),
+    ...approved.filter(q=>q.pool==='hard')
+  ];
   const html=buildRiseHTML(selected,state.config,state.config.maxAttempts);
   const win=window.open('','_blank');
   win.document.write(html);
@@ -979,6 +1050,28 @@ function copyShareLink(){
 document.getElementById('preview-modal').addEventListener('click',function(e){
   if(e.target===this)closePreview();
 });
+
+function updateRatioPreview(){
+  const e=parseInt(document.getElementById('ratio-easy').value)||0;
+  const m=parseInt(document.getElementById('ratio-medium').value)||0;
+  const h=parseInt(document.getElementById('ratio-hard').value)||0;
+  state.config.nEasy=e;state.config.nMedium=m;state.config.nHard=h;
+  document.getElementById('ratio-badge-display').textContent=e+' Easy : '+m+' Medium : '+h+' Hard';
+  document.getElementById('ratio-total-display').textContent='= '+(e+m+h)+' questions total';
+}
+
+function selectOrder(order){
+  state.config.shuffled=(order==='shuffled');
+  ['shuffled','fixed'].forEach(o=>document.getElementById('order-'+o).classList.remove('selected'));
+  document.getElementById('order-'+order).classList.add('selected');
+}
+
+function updateDisplayConfig(){
+  state.config.showBadge=document.getElementById('show-badge').checked;
+  state.config.showProgress=document.getElementById('show-progress').checked;
+  state.config.showScore=document.getElementById('show-score').checked;
+  state.config.showRestart=document.getElementById('show-restart').checked;
+}
 
 let notifTimer;
 function showNotification(msg){
