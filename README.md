@@ -2,7 +2,7 @@
 
 A free, open-source tool for Instructional Designers to build, review, and export multiple-choice questions (MCQs) for **Articulate Rise 360**.
 
-🌐 **Live app:** [your-cloud-run-url.run.app](https://your-cloud-run-url.run.app)
+🌐 **Live app:** [https://mcqstudio-1081064604778.asia-south1.run.app](https://your-cloud-run-url.run.app)
 
 ---
 
